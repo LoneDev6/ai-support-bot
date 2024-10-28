@@ -16,6 +16,12 @@ const summaryMap = new Enmap({
 client.on('messageCreate', async message => {
   if (message.author.bot) return;
 
+  // Check if contains bot tag
+  if (message.mentions.has(client.user)) {
+    await message.reply("Yo I'm online.");
+    return;
+  }
+
   // Allow only the bot owner to use the bot in DEBUG mode.
   if (DEBUG && message.author.id !== "289137568144949248") {
     return;
@@ -110,3 +116,8 @@ client.on('messageCreate', async message => {
 
 
 client.login(process.env.DISCORD_BOT_TOKEN);
+
+// Login callback
+client.on('ready', () => {
+  console.log(`Logged in as ${client.user.tag}!`);
+});
