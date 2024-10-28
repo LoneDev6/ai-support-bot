@@ -132,3 +132,4 @@ dist
 # Other
 data/*
 .vscode/*
+package-lock.json
