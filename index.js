@@ -66,6 +66,9 @@ client.on('messageCreate', async message => {
     redirect: "follow"
   };
 
+  // Mark as writing
+  await message.channel.sendTyping();
+
   await fetch("https://api.gitbook.com/v1/orgs/boes7AZS75MEh9rim0yC/ask", requestOptions).then(async (response) => {
     const text = await response.text();
     // Parse it as JSON
