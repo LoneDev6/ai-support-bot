@@ -87,69 +87,6 @@ client.on('messageCreate', async message => {
         answer += "\n\n-# Related Questions:\n" + followupQuestions;
       }
 
-      // Print sources by first resolving the page URL with this API call, for example: https://api.gitbook.com/v1/spaces/5WZMZPWMJbwGKAiRojzu/content/page/-MfCRr6wCOhkbuMq3bZt
-      // https://api.gitbook.com/v1/spaces/{space}/content/page/{page}
-      // let sourcesMessage = "";
-      // if (json.answer.sources?.length > 0) {
-      //   for (const source of json.answer.sources) {
-      //     const requestOptions = {
-      //       method: "GET",
-      //       headers: myHeaders,
-      //       redirect: "follow"
-      //     };
-
-      //     try {
-      //       console.log("source.space " + source.space);
-      //       const response = await fetch(`https://api.gitbook.com/v1/spaces/${source.space}/content/page/${source.page}`, requestOptions);
-      //       const text = await response.text();
-      //       const json2 = JSON.parse(text);
-      //       if (json2?.path) {
-      //         console.log("json2.path " + json2.path);
-
-      //         // Check if base URL is cached, otherwise get it from https://api.gitbook.com/v1/spaces/${space.space}/content -> urld.public
-      //         // Use a map as cache:
-      //         let foundUrl = cache.get(source.space + source.page);
-      //         if(!foundUrl) {
-      //           const requestOptions = {
-      //             method: "GET",
-      //             headers: myHeaders,
-      //             redirect: "follow"
-      //           };
-                
-      //           const response = await fetch(`https://api.gitbook.com/v1/spaces/${source.space}/content`, requestOptions);
-      //           const text = await response.text();
-      //           const json3 = JSON.parse(text);
-      //           if (json3?.urls?.public) {
-      //             console.log("json3.urls.public " + json3.urls.public);
-      //             // Get before last slash, if any. 
-      //             // For example to ignore https://itemsadder.devs.beer/~/revisions/ziJdZltk9ll31480VDZj/faq/identify-why-textures-are-not-show
-      //             // Become https://itemsadder.devs.beer/faq/identify-why-textures-are-not-show
-      //             const lastSlashIndex = json3.urls.public.lastIndexOf("~/");
-      //             if (lastSlashIndex > 0) {
-      //               json3.urls.public = `${json3.urls.public.substring(0, lastSlashIndex)}/`;
-      //             }
-      //             foundUrl = json3.urls.public + json2.path;
-      //           } else {
-      //             console.error("Failed to find public URL for space: ", source.space);
-      //           }
-      //         }
-
-      //         cache.set(source.space + source.page, foundUrl);
-
-      //         console.log("foundUrl " + foundUrl);
-      //         sourcesMessage += `<${foundUrl}>\n`;
-      //       }
-      //     } catch (error) {
-      //       console.error(error);
-      //     }
-      //   }
-      // }
-
-      // if (sourcesMessage !== "") {
-      //   await message.reply("Sources:\n" + sourcesMessage);
-      // }
-      
-      // Split the mesaage to 2000 characters and send it in messages of 2000 characters each.
       const messages = [];
       while (answer.length > 0) {
         messages.push(answer.substring(0, 2000));
