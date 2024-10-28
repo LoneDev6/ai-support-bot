@@ -1,3 +1,4 @@
+const DEBUG = false;
 require('dotenv').config();
 const Enmap = require("enmap");
 const { Client, GatewayIntentBits } = require('discord.js');
@@ -15,22 +16,18 @@ const summaryMap = new Enmap({
 client.on('messageCreate', async message => {
   if (message.author.bot) return;
 
-  // Check if author is 289137568144949248, for debug purpose.
-  // if (message.author.id !== "289137568144949248" && message.author.id !== "424945423632039937" && message.author.id !== "204232208049766400") {npm
-  //   return;
-  // }
-  // Debug to allow only me to use the bot.
-  if (message.author.id !== "289137568144949248") {
+  // Allow only the bot owner to use the bot in DEBUG mode.
+  if (DEBUG && message.author.id !== "289137568144949248") {
     return;
   }
 
-  // Check if the channel is a thread of the forum channel 1288154643859243089
+  // Check if the channel is a thread of the forum channel 1288154643859243089.
   if (message.channel.parentId !== "1288154643859243089") {
     return;
   }
 
-  // Check if shorter than 50 characters
-  if (message.content.length < 20) {
+  // Check if shorter tha 10 words
+  if (message.content.split(" ").length < 10) {
     return;
   }
 
@@ -63,52 +60,52 @@ client.on('messageCreate', async message => {
     redirect: "follow"
   };
 
-  await fetch("https://api.gitbook.com/v1/orgs/boes7AZS75MEh9rim0yC/ask", requestOptions)
-    .then(async (response) => {
+  await fetch("https://api.gitbook.com/v1/orgs/boes7AZS75MEh9rim0yC/ask", requestOptions).then(async (response) => {
+    const text = await response.text();
+    // Parse it as JSON
+    const json = JSON.parse(text);
+    if (!(json?.answer?.text)) {
+      console.log("Failed to find answer for the question: ", message.content);
+      return;
+    }
+    // Get the answer from answer.text
+    let answer = json.answer.text;
+    console.log(json);
 
-      const text = await response.text();
-      // Parse it as JSON
-      const json = JSON.parse(text);
-      if (!(json?.answer?.text)) {
-        console.log("Failed to find answer for the question: ", message.content);
-        return;
-      }
-      // Get the answer from answer.text
-      let answer = json.answer.text;
-      console.log(json);
-
-      // Send the followupQuestions
-      if (json.answer.followupQuestions?.length > 0) {
-        let followupQuestions = json.answer.followupQuestions;
-        followupQuestions = followupQuestions.map((question, index) => {
-          return `-# - ${question}`;
-        });
-        followupQuestions = followupQuestions.join("\n");
-        answer += "\n\n-# Related Questions:\n" + followupQuestions;
-      }
-
-      const messages = [];
-      while (answer.length > 0) {
-        messages.push(answer.substring(0, 2000));
-        answer = answer.substring(2000);
-      }
-
-      // Make sure to parse messages special characters of discord, unescape them if they are escaped.
-      messages.forEach((msg, index) => {
-        messages[index] = msg
-          .replace(/\\n/g, '\n') // Uneascape new lines
-          .replace(/\\r/g, '\r') // Uneascape carriage returns
-          .replace(/\\t/g, '\t') // Uneascape tabs
-          .replace(/\\`/g, '`') // Unescape backticks
-          .replace(/\n\n/g, '\n') // Remove double new lines
+    // Send the followupQuestions
+    if (json.answer.followupQuestions?.length > 0) {
+      let followupQuestions = json.answer.followupQuestions;
+      followupQuestions = followupQuestions.map((question, index) => {
+        return `-# - ${question}`;
       });
+      followupQuestions = followupQuestions.join("\n");
+      answer += "\n\n-# Related Questions:\n" + followupQuestions;
+    }
 
-      for (let i = 0; i < messages.length; i++) {
+    const messages = [];
+    while (answer.length > 0) {
+      messages.push(answer.substring(0, 2000));
+      answer = answer.substring(2000);
+    }
+
+    // Make sure to parse messages special characters of discord, unescape them if they are escaped.
+    messages.forEach((msg, index) => {
+      messages[index] = msg
+        .replace(/\\n/g, '\n') // Uneascape new lines
+        .replace(/\\r/g, '\r') // Uneascape carriage returns
+        .replace(/\\t/g, '\t') // Uneascape tabs
+        .replace(/\\`/g, '`') // Unescape backticks
+        .replace(/\n\n/g, '\n') // Remove double new lines
+    });
+
+    for (let i = 0; i < messages.length; i++) {
+      await message.reply(messages[i]);
+      if(i + 1 < messages.length - 1) {
         // Wait 200ms before sending the next message, to avoid rate limits
         await new Promise((resolve) => setTimeout(resolve, 200));
-        await message.reply(messages[i]);
       }
-    });
+    }
+  });
 });
 
 
