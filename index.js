@@ -33,7 +33,7 @@ client.on('messageCreate', async message => {
   }
 
   // Check if shorter tha 10 words
-  if (message.content.split(" ").length < 10) {
+  if (message.content.split(" ").length < 5) {
     return;
   }
 
@@ -80,6 +80,8 @@ client.on('messageCreate', async message => {
     // Get the answer from answer.text
     let answer = json.answer.text;
     console.log(json);
+
+    answer += "\n-# <:help:1293559735743938631> I'm an AI agent, my answer might not be accurate. Please verify with the official documentation or ask in the forum.";
 
     // Send the followupQuestions
     if (json.answer.followupQuestions?.length > 0) {
