@@ -53,7 +53,7 @@ client.on('messageCreate', async message => {
 
   const myHeaders = new Headers();
   myHeaders.append("Content-Type", "application/json");
-  myHeaders.append("Authorization", "Bearer gb_api_IoDQIzMcALsdWJtdkLEBVrSUSxySTca9ZaGlldZI");
+  myHeaders.append("Authorization", `Bearer ${process.env.GITBOOK_API_KEY}`);
 
   const raw = JSON.stringify({
     "query": message.content,
