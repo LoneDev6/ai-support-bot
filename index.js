@@ -1,14 +1,17 @@
 const DEBUG = false;
 require('dotenv').config();
 const Enmap = require("enmap");
-const { Client, GatewayIntentBits } = require('discord.js');
+const { Client, GatewayIntentBits, SlashCommandBuilder} = require('discord.js');
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
 
-// Normal enmap with default options
-// non-cached, auto-fetch enmap: 
 const summaryMap = new Enmap({
   name: "summary",
+  autoFetch: true,
+  fetchAll: false
+});
+const shutUpMap = new Enmap({
+  name: "shutUp",
   autoFetch: true,
   fetchAll: false
 });
@@ -16,14 +19,14 @@ const summaryMap = new Enmap({
 client.on('messageCreate', async message => {
   if (message.author.bot) return;
 
-  // Check if contains bot tag
-  if (message.mentions.has(client.user)) {
-    await message.reply("Yo I'm online.");
+  // Allow only the bot owner to use the bot in DEBUG mode.
+  if (DEBUG && message.author.id !== "289137568144949248") {
     return;
   }
 
-  // Allow only the bot owner to use the bot in DEBUG mode.
-  if (DEBUG && message.author.id !== "289137568144949248") {
+  // Check if contains bot tag
+  if (message.mentions.has(client.user)) {
+    await message.reply("Yo I'm online.");
     return;
   }
 
@@ -34,6 +37,10 @@ client.on('messageCreate', async message => {
 
   // Check if shorter tha 10 words
   if (message.content.split(" ").length < 5) {
+    return;
+  }
+
+  if (shutUpMap.get(message.channel.id)) {
     return;
   }
 
@@ -120,9 +127,48 @@ client.on('messageCreate', async message => {
 });
 
 
-client.login(process.env.DISCORD_BOT_TOKEN);
 
 // Login callback
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
+
+  // Register shutup slash command using the discordjs api v14, not manual json, using SlashCommandBuilder
+  const shutUpCommand = new SlashCommandBuilder()
+    .setName('shutup')
+    .setDescription('Shut up the bot in the current channel.');
+
+  client.guilds.cache.forEach(async guild => {
+    await guild.commands.create(shutUpCommand);
+  });
+
 });
+
+// on shutup command
+client.on('interactionCreate', async interaction => {
+  if (!interaction.isCommand()) return;
+
+  // Only for thread channels
+  if (interaction.channel.parentId !== "1288154643859243089") {
+    return;
+  }
+
+  if (interaction.commandName === 'shutup') {
+    if(shutUpMap.get(interaction.channel.id)) {
+      shutUpMap.delete(interaction.channel.id);
+      await interaction.reply({
+        content: "I will listen again to this channel! ^^",
+        ephemeral: true
+      });
+    } else {
+      shutUpMap.set(interaction.channel.id, true);
+      await interaction.reply({
+        content: '<:spigolettecryingemoji:1301190926080802887> Sorry for the inconvenience, I will shut up in this channel.',
+        ephemeral: true
+      });
+    }
+  }
+});
+
+
+client.login(process.env.DISCORD_BOT_TOKEN);
+
